@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Richest Person in the Graveyard</title>
+<style>
+  :root {
+    --night: #0b0e1a;
+    --night-2: #131830;
+    --stone: #8a8fa3;
+    --stone-dark: #5c6175;
+    --stone-light: #b8bccc;
+    --moss: #3e5c4b;
+    --gold: #e8b339;
+    --gold-soft: #f5d77e;
+    --fog: rgba(180, 190, 215, 0.08);
+    --ink: #e6e8f0;
+    --ink-dim: #9aa0b5;
+    --grass: #16241d;
+    --danger: #c75e5e;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: Georgia, 'Times New Roman', serif;
+    background: linear-gradient(180deg, var(--night) 0%, var(--night-2) 55%, #1a2336 100%);
+    color: var(--ink);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ---------- Night sky ---------- */
+  .sky {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .star {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    border-radius: 50%;
+    background: #fff;
+    opacity: 0.7;
+    animation: twinkle 3s ease-in-out infinite;
+  }
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.25; }
+    50% { opacity: 0.9; }
+  }
+  .moon {
+    position: absolute;
+    top: 48px;
+    right: 8vw;
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #fdfbef, #d9d4b8 70%, #b8b294);
+    box-shadow: 0 0 60px 18px rgba(253, 251, 239, 0.18);
+  }
+
+  main { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 0 24px 60px; }
+
+  /* ---------- Header ---------- */
+  header { text-align: center; padding: 72px 0 28px; }
+  header h1 {
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    letter-spacing: 2px;
+    text-shadow: 0 2px 18px rgba(232, 179, 57, 0.25);
+  }
+  header h1 .gold { color: var(--gold); }
+  header p.tagline {
+    margin-top: 12px;
+    color: var(--ink-dim);
+    font-style: italic;
+    font-size: 1.05rem;
+  }
+
+  /* ---------- Stats bar ---------- */
+  .stats {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 16px;
+    margin: 28px 0 8px;
+  }
+  .stat {
+    background: var(--fog);
+    border: 1px solid rgba(184, 188, 204, 0.18);
+    border-radius: 10px;
+    padding: 14px 22px;
+    text-align: center;
+    min-width: 170px;
+    backdrop-filter: blur(2px);
+  }
+  .stat .value { font-size: 1.4rem; color: var(--gold-soft); font-weight: bold; }
+  .stat .label { font-size: 0.78rem; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 1.5px; margin-top: 4px; }
+
+  /* ---------- Controls ---------- */
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+    margin: 26px 0 38px;
+  }
+  .controls input[type="search"],
+  .controls select {
+    background: var(--night-2);
+    border: 1px solid var(--stone-dark);
+    color: var(--ink);
+    font-family: inherit;
+    font-size: 0.95rem;
+    padding: 10px 14px;
+    border-radius: 8px;
+    outline: none;
+  }
+  .controls input[type="search"] { width: 260px; }
+  .controls input[type="search"]:focus,
+  .controls select:focus { border-color: var(--gold); }
+  .btn {
+    background: linear-gradient(180deg, var(--gold), #c5922a);
+    border: none;
+    color: #2a2008;
+    font-family: inherit;
+    font-weight: bold;
+    font-size: 0.95rem;
+    padding: 10px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(232, 179, 57, 0.35); }
+  .btn.ghost {
+    background: transparent;
+    border: 1px solid var(--stone-dark);
+    color: var(--ink-dim);
+  }
+  .btn.ghost:hover { border-color: var(--danger); color: var(--danger); box-shadow: none; }
+
+  /* ---------- Graveyard ---------- */
+  .graveyard {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 28px 22px;
+    align-items: end;
+    padding: 30px 18px 0;
+    background:
+      radial-gradient(ellipse at 50% 100%, rgba(62, 92, 75, 0.22), transparent 70%),
+      linear-gradient(180deg, transparent, var(--grass) 96%);
+    border-radius: 16px;
+    min-height: 300px;
+  }
+
+  .grave {
+    position: relative;
+    text-align: center;
+    cursor: default;
+    transition: transform 0.2s ease;
+  }
+  .grave:hover { transform: translateY(-5px); }
+
+  .headstone {
+    position: relative;
+    margin: 0 auto;
+    width: 88%;
+    background: linear-gradient(170deg, var(--stone-light), var(--stone) 45%, var(--stone-dark));
+    border-radius: 90px 90px 6px 6px;
+    padding: 34px 14px 18px;
+    box-shadow:
+      inset 0 2px 4px rgba(255, 255, 255, 0.25),
+      inset 0 -6px 12px rgba(0, 0, 0, 0.3),
+      0 10px 24px rgba(0, 0, 0, 0.5);
+    color: #23263a;
+    min-height: 190px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 4px;
+  }
+  /* Wealth tiers grow the stone */
+  .grave[data-tier="1"] .headstone { min-height: 190px; }
+  .grave[data-tier="2"] .headstone { min-height: 215px; }
+  .grave[data-tier="3"] .headstone { min-height: 240px; }
+  .grave[data-tier="4"] .headstone { min-height: 270px; }
+
+  .grave.richest .headstone {
+    background: linear-gradient(170deg, #f7e4ad, var(--gold-soft) 40%, #b08620);
+    box-shadow:
+      inset 0 2px 4px rgba(255, 255, 255, 0.5),
+      inset 0 -6px 12px rgba(90, 60, 0, 0.35),
+      0 10px 30px rgba(232, 179, 57, 0.45);
+  }
+  .grave.richest::before {
+    content: "👑";
+    position: absolute;
+    top: -26px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 1.6rem;
+    z-index: 2;
+  }
+
+  .rank-badge {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(20, 24, 44, 0.75);
+    color: var(--gold-soft);
+    font-size: 0.7rem;
+    font-weight: bold;
+    letter-spacing: 1px;
+    padding: 2px 10px;
+    border-radius: 10px;
+  }
+
+  .headstone .rip { font-size: 0.7rem; letter-spacing: 4px; opacity: 0.55; margin-top: 8px; }
+  .headstone .name { font-size: 1.05rem; font-weight: bold; line-height: 1.2; margin-top: 2px; }
+  .headstone .years { font-size: 0.8rem; opacity: 0.75; }
+  .headstone .worth {
+    margin-top: 8px;
+    font-size: 1.05rem;
+    font-weight: bold;
+    color: #5a3d00;
+    background: rgba(255, 255, 255, 0.28);
+    border-radius: 6px;
+    padding: 3px 6px;
+  }
+  .grave:not(.richest) .headstone .worth { color: #1d2b4a; }
+  .headstone .epitaph {
+    margin-top: 8px;
+    font-size: 0.78rem;
+    font-style: italic;
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: opacity 0.25s ease, max-height 0.25s ease;
+  }
+  .grave:hover .headstone .epitaph { opacity: 0.85; max-height: 80px; }
+
+  .grave .mound {
+    width: 96%;
+    height: 16px;
+    margin: -4px auto 0;
+    background: linear-gradient(180deg, var(--moss), var(--grass));
+    border-radius: 50% 50% 8px 8px / 100% 100% 8px 8px;
+  }
+  .grave .remove {
+    position: absolute;
+    top: -8px;
+    right: 2px;
+    background: var(--danger);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    font-size: 0.8rem;
+    line-height: 1;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    z-index: 3;
+  }
+  .grave:hover .remove { opacity: 1; }
+
+  .empty-note {
+    grid-column: 1 / -1;
+    text-align: center;
+    color: var(--ink-dim);
+    font-style: italic;
+    padding: 60px 0;
+  }
+
+  /* ---------- Modal ---------- */
+  dialog {
+    border: 1px solid var(--stone-dark);
+    border-radius: 14px;
+    background: var(--night-2);
+    color: var(--ink);
+    padding: 28px;
+    width: min(420px, 92vw);
+  }
+  dialog::backdrop { background: rgba(5, 7, 15, 0.75); }
+  dialog h2 { margin-bottom: 18px; font-size: 1.3rem; color: var(--gold-soft); }
+  dialog form { display: flex; flex-direction: column; gap: 12px; }
+  dialog label { font-size: 0.82rem; color: var(--ink-dim); display: flex; flex-direction: column; gap: 5px; }
+  dialog input, dialog textarea {
+    background: var(--night);
+    border: 1px solid var(--stone-dark);
+    border-radius: 8px;
+    color: var(--ink);
+    font-family: inherit;
+    font-size: 0.95rem;
+    padding: 9px 12px;
+    outline: none;
+  }
+  dialog input:focus, dialog textarea:focus { border-color: var(--gold); }
+  dialog .row { display: flex; gap: 10px; }
+  dialog .row label { flex: 1; }
+  dialog .actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px; }
+
+  /* ---------- Footer ---------- */
+  footer {
+    text-align: center;
+    margin-top: 56px;
+    color: var(--ink-dim);
+    font-style: italic;
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+  footer .attribution { font-size: 0.8rem; font-style: normal; margin-top: 8px; opacity: 0.7; }
+</style>
+</head>
+<body>
+
+<div class="sky" id="sky"><div class="moon"></div></div>
+
+<main>
+  <header>
+    <h1>Richest Person <span class="gold">in the Graveyard</span></h1>
+    <p class="tagline">A memorial leaderboard of history's wealthiest souls — because you can't take it with you.</p>
+  </header>
+
+  <section class="stats" aria-label="Graveyard statistics">
+    <div class="stat"><div class="value" id="stat-count">0</div><div class="label">Souls at rest</div></div>
+    <div class="stat"><div class="value" id="stat-total">$0</div><div class="label">Combined fortune</div></div>
+    <div class="stat"><div class="value" id="stat-richest">—</div><div class="label">Current richest</div></div>
+  </section>
+
+  <section class="controls" aria-label="Search and sort">
+    <input type="search" id="search" placeholder="Search the graveyard…" aria-label="Search graves by name">
+    <select id="sort" aria-label="Sort graves">
+      <option value="worth-desc">Richest first</option>
+      <option value="worth-asc">Poorest first</option>
+      <option value="name">Name (A–Z)</option>
+      <option value="died">Year of death</option>
+    </select>
+    <button class="btn" id="add-btn">⚰️ Bury someone new</button>
+  </section>
+
+  <section class="graveyard" id="graveyard" aria-label="The graveyard"></section>
+
+  <footer>
+    “Being the richest man in the cemetery doesn't matter to me.<br>
+    Going to bed at night saying we've done something wonderful — that's what matters to me.”
+    <div class="attribution">— Steve Jobs · Net worths are inflation-adjusted estimates, in 2026 US dollars</div>
+  </footer>
+</main>
+
+<dialog id="add-dialog">
+  <h2>Bury someone new</h2>
+  <form id="add-form" method="dialog">
+    <label>Name
+      <input type="text" id="f-name" required maxlength="60" placeholder="e.g. Ebenezer Goldworth">
+    </label>
+    <div class="row">
+      <label>Born
+        <input type="number" id="f-born" required min="-3000" max="2026" placeholder="1900">
+      </label>
+      <label>Died
+        <input type="number" id="f-died" required min="-3000" max="2026" placeholder="1980">
+      </label>
+    </div>
+    <label>Net worth at death (in billions USD)
+      <input type="number" id="f-worth" required min="0" step="0.1" placeholder="42">
+    </label>
+    <label>Epitaph
+      <textarea id="f-epitaph" rows="2" maxlength="120" placeholder="A few parting words…"></textarea>
+    </label>
+    <div class="actions">
+      <button type="button" class="btn ghost" id="cancel-btn">Cancel</button>
+      <button type="submit" class="btn">Lay to rest</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+(function () {
+  'use strict';
+
+  var STORAGE_KEY = 'graveyard-custom-souls';
+
+  // Net worth in billions of (inflation-adjusted) USD.
+  var SOULS = [
+    { name: 'Mansa Musa', born: 1280, died: 1337, worth: 400, epitaph: 'Gave away so much gold he crashed Cairo’s economy for a decade.' },
+    { name: 'John D. Rockefeller', born: 1839, died: 1937, worth: 340, epitaph: 'Standard Oil. The original billionaire.' },
+    { name: 'Andrew Carnegie', born: 1835, died: 1919, worth: 310, epitaph: 'He who dies rich, dies disgraced — so he gave most of it away.' },
+    { name: 'Jakob Fugger', born: 1459, died: 1525, worth: 277, epitaph: '“Fugger the Rich.” Bankrolled emperors and popes.' },
+    { name: 'Cornelius Vanderbilt', born: 1794, died: 1877, worth: 185, epitaph: 'Ferries, railroads, and a fortune to match.' },
+    { name: 'Henry Ford', born: 1863, died: 1947, worth: 180, epitaph: 'Put the world on wheels.' },
+    { name: 'Marcus Licinius Crassus', born: -115, died: -53, worth: 170, epitaph: 'The richest man in Rome. It did not save him.' },
+    { name: 'J.P. Morgan', born: 1837, died: 1913, worth: 118, epitaph: 'Bailed out the U.S. Treasury. Twice.' },
+    { name: 'Sam Walton', born: 1918, died: 1992, worth: 95, epitaph: 'Everyday low prices, everyday high fortune.' },
+    { name: 'Howard Hughes', born: 1905, died: 1976, worth: 43, epitaph: 'Aviator, filmmaker, recluse.' },
+    { name: 'Hetty Green', born: 1834, died: 1916, worth: 17, epitaph: 'The Witch of Wall Street — richest woman of her age.' },
+    { name: 'Steve Jobs', born: 1955, died: 2011, worth: 10.2, epitaph: 'Stay hungry. Stay foolish.' }
+  ];
+
+  var graveyardEl = document.getElementById('graveyard');
+  var searchEl = document.getElementById('search');
+  var sortEl = document.getElementById('sort');
+  var dialogEl = document.getElementById('add-dialog');
+  var formEl = document.getElementById('add-form');
+
+  function loadCustom() {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function saveCustom(list) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+  }
+
+  function allSouls() {
+    return SOULS.map(function (s) { return Object.assign({ custom: false }, s); })
+      .concat(loadCustom().map(function (s) { return Object.assign({ custom: true }, s); }));
+  }
+
+  function formatWorth(billions) {
+    if (billions >= 1) {
+      return '$' + (billions % 1 === 0 ? billions : billions.toFixed(1)) + 'B';
+    }
+    return '$' + Math.round(billions * 1000) + 'M';
+  }
+
+  function formatYear(y) {
+    return y < 0 ? Math.abs(y) + ' BC' : String(y);
+  }
+
+  function wealthTier(worth, max) {
+    var ratio = worth / max;
+    if (ratio > 0.75) return 4;
+    if (ratio > 0.4) return 3;
+    if (ratio > 0.1) return 2;
+    return 1;
+  }
+
+  function render() {
+    var souls = allSouls();
+    var query = searchEl.value.trim().toLowerCase();
+    var sort = sortEl.value;
+
+    var maxWorth = souls.reduce(function (m, s) { return Math.max(m, s.worth); }, 1);
+    var ranked = souls.slice().sort(function (a, b) { return b.worth - a.worth; });
+    ranked.forEach(function (s, i) { s.rank = i + 1; });
+
+    var visible = souls.filter(function (s) {
+      return !query || s.name.toLowerCase().indexOf(query) !== -1;
+    });
+
+    visible.sort(function (a, b) {
+      switch (sort) {
+        case 'worth-asc': return a.worth - b.worth;
+        case 'name': return a.name.localeCompare(b.name);
+        case 'died': return a.died - b.died;
+        default: return b.worth - a.worth;
+      }
+    });
+
+    var total = souls.reduce(function (sum, s) { return sum + s.worth; }, 0);
+    document.getElementById('stat-count').textContent = souls.length;
+    document.getElementById('stat-total').textContent =
+      total >= 1000 ? '$' + (total / 1000).toFixed(2) + 'T' : '$' + Math.round(total) + 'B';
+    document.getElementById('stat-richest').textContent = ranked.length ? ranked[0].name : '—';
+
+    graveyardEl.innerHTML = '';
+
+    if (!visible.length) {
+      var note = document.createElement('p');
+      note.className = 'empty-note';
+      note.textContent = 'No souls match your search. The graveyard is quiet tonight…';
+      graveyardEl.appendChild(note);
+      return;
+    }
+
+    visible.forEach(function (soul) {
+      var grave = document.createElement('article');
+      grave.className = 'grave' + (soul.rank === 1 ? ' richest' : '');
+      grave.dataset.tier = wealthTier(soul.worth, maxWorth);
+
+      var removeBtn = '';
+      if (soul.custom) {
+        removeBtn = '<button class="remove" data-name="' + escapeHtml(soul.name) + '" title="Exhume (remove)" aria-label="Remove ' + escapeHtml(soul.name) + '">✕</button>';
+      }
+
+      grave.innerHTML =
+        removeBtn +
+        '<div class="headstone">' +
+          '<span class="rank-badge">#' + soul.rank + '</span>' +
+          '<div class="rip">R · I · P</div>' +
+          '<div class="name">' + escapeHtml(soul.name) + '</div>' +
+          '<div class="years">' + formatYear(soul.born) + ' – ' + formatYear(soul.died) + '</div>' +
+          '<div class="worth">' + formatWorth(soul.worth) + '</div>' +
+          '<div class="epitaph">“' + escapeHtml(soul.epitaph || 'Gone, but not forgotten.') + '”</div>' +
+        '</div>' +
+        '<div class="mound"></div>';
+
+      graveyardEl.appendChild(grave);
+    });
+  }
+
+  function escapeHtml(str) {
+    var div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  graveyardEl.addEventListener('click', function (e) {
+    var btn = e.target.closest('.remove');
+    if (!btn) return;
+    var name = btn.dataset.name;
+    saveCustom(loadCustom().filter(function (s) { return s.name !== name; }));
+    render();
+  });
+
+  document.getElementById('add-btn').addEventListener('click', function () {
+    formEl.reset();
+    dialogEl.showModal();
+  });
+
+  document.getElementById('cancel-btn').addEventListener('click', function () {
+    dialogEl.close();
+  });
+
+  formEl.addEventListener('submit', function () {
+    var born = parseInt(document.getElementById('f-born').value, 10);
+    var died = parseInt(document.getElementById('f-died').value, 10);
+    if (died < born) {
+      died = born;
+    }
+    var custom = loadCustom();
+    custom.push({
+      name: document.getElementById('f-name').value.trim(),
+      born: born,
+      died: died,
+      worth: Math.max(0, parseFloat(document.getElementById('f-worth').value) || 0),
+      epitaph: document.getElementById('f-epitaph').value.trim()
+    });
+    saveCustom(custom);
+    render();
+  });
+
+  searchEl.addEventListener('input', render);
+  sortEl.addEventListener('change', render);
+
+  // Scatter stars across the sky
+  var sky = document.getElementById('sky');
+  for (var i = 0; i < 70; i++) {
+    var star = document.createElement('div');
+    star.className = 'star';
+    star.style.left = Math.random() * 100 + 'vw';
+    star.style.top = Math.random() * 60 + 'vh';
+    star.style.animationDelay = (Math.random() * 3) + 's';
+    sky.appendChild(star);
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>
