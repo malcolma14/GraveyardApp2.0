@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Richest Person in the Graveyard</title>
+<style>
+  :root {
+    --night: #0b1020;
+    --night-deep: #060912;
+    --moon: #f4f1de;
+    --stone: #9aa3b2;
+    --stone-dark: #6b7280;
+    --grass: #101c14;
+    --gold: #d4af37;
+    --fog: rgba(200, 210, 230, 0.06);
+    --ink: #e7e9ee;
+    --ink-dim: #9aa3b2;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: linear-gradient(to bottom, var(--night-deep) 0%, var(--night) 55%, #131a2e 100%);
+    color: var(--ink);
+    font-family: Georgia, 'Times New Roman', serif;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+
+  /* ---------- Night sky ---------- */
+  .sky {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .star {
+    position: absolute;
+    background: #fff;
+    border-radius: 50%;
+    opacity: 0.7;
+    animation: twinkle 3s ease-in-out infinite;
+  }
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.25; }
+    50% { opacity: 0.9; }
+  }
+  .moon {
+    position: absolute;
+    top: 6vh;
+    right: 10vw;
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #fffbe8, var(--moon) 60%, #d8d4bd);
+    box-shadow: 0 0 60px 20px rgba(244, 241, 222, 0.25);
+  }
+  .moon::after {
+    content: '';
+    position: absolute;
+    top: 18px; left: 22px;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.08);
+    box-shadow: 28px 20px 0 -4px rgba(0,0,0,0.07), 10px 38px 0 -6px rgba(0,0,0,0.06);
+  }
+
+  .fog {
+    position: fixed;
+    bottom: 0;
+    left: -50%;
+    width: 200%;
+    height: 40vh;
+    background: linear-gradient(to top, var(--fog), transparent);
+    pointer-events: none;
+    z-index: 3;
+    animation: drift 40s linear infinite alternate;
+  }
+  @keyframes drift {
+    from { transform: translateX(0); }
+    to { transform: translateX(8%); }
+  }
+
+  /* ---------- Header ---------- */
+  header {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    padding: 9vh 1.5rem 3rem;
+  }
+  header h1 {
+    font-size: clamp(2rem, 5.5vw, 4rem);
+    letter-spacing: 0.06em;
+    color: var(--moon);
+    text-shadow: 0 2px 24px rgba(244, 241, 222, 0.25);
+  }
+  header h1 .gold { color: var(--gold); }
+  header p.tagline {
+    margin-top: 1rem;
+    font-style: italic;
+    color: var(--ink-dim);
+    font-size: clamp(1rem, 2vw, 1.2rem);
+  }
+
+  /* ---------- Leaderboard ---------- */
+  .leaderboard {
+    position: relative;
+    z-index: 2;
+    max-width: 680px;
+    margin: 0 auto 4rem;
+    padding: 0 1.5rem;
+  }
+  .leaderboard h2 {
+    text-align: center;
+    font-size: 1.1rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+    margin-bottom: 1.25rem;
+  }
+  .leaderboard ol {
+    list-style: none;
+    counter-reset: rank;
+  }
+  .leaderboard li {
+    counter-increment: rank;
+    display: flex;
+    align-items: baseline;
+    gap: 0.9rem;
+    padding: 0.65rem 1rem;
+    border-bottom: 1px solid rgba(154, 163, 178, 0.15);
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .leaderboard li:hover { background: rgba(212, 175, 55, 0.08); }
+  .leaderboard li::before {
+    content: counter(rank);
+    font-size: 0.9rem;
+    color: var(--gold);
+    width: 1.5rem;
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .leaderboard .name { flex: 1; }
+  .leaderboard .fortune { color: var(--gold); white-space: nowrap; }
+  .leaderboard .took {
+    color: var(--ink-dim);
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+
+  /* ---------- Graveyard ---------- */
+  .graveyard {
+    position: relative;
+    z-index: 2;
+    background: linear-gradient(to bottom, transparent, var(--grass) 18%);
+    padding: 4rem 1.5rem 7rem;
+  }
+  .graveyard h2 {
+    text-align: center;
+    font-size: 1.1rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+    margin-bottom: 3rem;
+  }
+  .plots {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 2.5rem 1.5rem;
+    max-width: 1100px;
+    margin: 0 auto;
+    align-items: end;
+  }
+
+  .tombstone {
+    position: relative;
+    background: linear-gradient(to bottom, var(--stone), var(--stone-dark));
+    border-radius: 90px 90px 6px 6px;
+    padding: 2.4rem 1rem 1.4rem;
+    text-align: center;
+    color: #1c2230;
+    cursor: pointer;
+    border: none;
+    font-family: inherit;
+    box-shadow:
+      inset 0 2px 6px rgba(255,255,255,0.25),
+      inset 0 -8px 14px rgba(0,0,0,0.25),
+      0 14px 10px -8px rgba(0,0,0,0.6);
+    transition: transform 0.25s, box-shadow 0.25s;
+  }
+  .tombstone:hover, .tombstone:focus-visible {
+    transform: translateY(-6px);
+    box-shadow:
+      inset 0 2px 6px rgba(255,255,255,0.25),
+      inset 0 -8px 14px rgba(0,0,0,0.25),
+      0 20px 14px -8px rgba(0,0,0,0.55),
+      0 0 30px rgba(212, 175, 55, 0.25);
+    outline: none;
+  }
+  .tombstone::after {
+    content: '';
+    position: absolute;
+    bottom: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 115%;
+    height: 16px;
+    border-radius: 50%;
+    background: radial-gradient(ellipse, rgba(0,0,0,0.55), transparent 70%);
+    pointer-events: none;
+  }
+  .tombstone .cross {
+    font-size: 1.1rem;
+    color: #2c3445;
+    display: block;
+    margin-bottom: 0.4rem;
+  }
+  .tombstone .t-name {
+    font-weight: bold;
+    font-size: 1.02rem;
+    letter-spacing: 0.04em;
+    line-height: 1.25;
+  }
+  .tombstone .t-dates {
+    font-size: 0.82rem;
+    margin-top: 0.3rem;
+    color: #2c3445;
+  }
+  .tombstone .t-fortune {
+    margin-top: 0.7rem;
+    font-size: 0.86rem;
+    color: #5a4a12;
+    font-weight: bold;
+  }
+  .tombstone .t-took {
+    font-size: 0.74rem;
+    margin-top: 0.35rem;
+    font-style: italic;
+    color: #3a4254;
+  }
+
+  /* ---------- Modal ---------- */
+  dialog {
+    background: linear-gradient(to bottom, #161d31, #0e1424);
+    color: var(--ink);
+    border: 1px solid rgba(212, 175, 55, 0.35);
+    border-radius: 10px;
+    padding: 2.2rem 2.4rem;
+    max-width: 480px;
+    width: calc(100vw - 3rem);
+    box-shadow: 0 30px 80px rgba(0,0,0,0.7);
+  }
+  dialog::backdrop { background: rgba(4, 6, 12, 0.75); }
+  dialog h3 {
+    color: var(--gold);
+    font-size: 1.5rem;
+    margin-bottom: 0.2rem;
+  }
+  dialog .m-dates { color: var(--ink-dim); margin-bottom: 1rem; }
+  dialog .m-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(154, 163, 178, 0.15);
+    font-size: 0.95rem;
+  }
+  dialog .m-row span:last-child { color: var(--gold); text-align: right; }
+  dialog .m-bio { margin: 1.1rem 0; line-height: 1.55; color: var(--ink); }
+  dialog .m-epitaph {
+    font-style: italic;
+    color: var(--ink-dim);
+    border-left: 3px solid var(--gold);
+    padding-left: 1rem;
+    margin-bottom: 1.4rem;
+  }
+  dialog button.close {
+    background: transparent;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    border-radius: 6px;
+    padding: 0.5rem 1.4rem;
+    font-family: inherit;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  dialog button.close:hover { background: var(--gold); color: var(--night-deep); }
+
+  /* ---------- Footer quote ---------- */
+  footer {
+    position: relative;
+    z-index: 2;
+    background: var(--grass);
+    text-align: center;
+    padding: 4rem 1.5rem 5rem;
+  }
+  footer blockquote {
+    max-width: 640px;
+    margin: 0 auto;
+    font-size: clamp(1.1rem, 2.4vw, 1.45rem);
+    font-style: italic;
+    line-height: 1.6;
+    color: var(--moon);
+  }
+  footer cite {
+    display: block;
+    margin-top: 1.2rem;
+    font-style: normal;
+    font-size: 0.95rem;
+    color: var(--ink-dim);
+  }
+  footer .footnote {
+    margin-top: 3rem;
+    font-size: 0.8rem;
+    color: #4a5468;
+  }
+</style>
+</head>
+<body>
+
+<div class="sky" id="sky">
+  <div class="moon"></div>
+</div>
+<div class="fog"></div>
+
+<header>
+  <h1>Richest Person in the <span class="gold">Graveyard</span></h1>
+  <p class="tagline">Every fortune ever amassed is buried here. None of it left with its owner.</p>
+</header>
+
+<section class="leaderboard" aria-label="All-time fortune leaderboard">
+  <h2>The Final Leaderboard</h2>
+  <ol id="leaderboard-list"></ol>
+</section>
+
+<section class="graveyard" aria-label="Graveyard of the wealthy">
+  <h2>Walk the Grounds</h2>
+  <div class="plots" id="plots"></div>
+</section>
+
+<dialog id="modal">
+  <h3 id="m-name"></h3>
+  <p class="m-dates" id="m-dates"></p>
+  <div class="m-row"><span>Fortune at peak</span><span id="m-fortune"></span></div>
+  <div class="m-row"><span>Taken with them</span><span>$0</span></div>
+  <p class="m-bio" id="m-bio"></p>
+  <p class="m-epitaph" id="m-epitaph"></p>
+  <button class="close" id="m-close">Rest in peace</button>
+</dialog>
+
+<footer>
+  <blockquote>
+    &ldquo;Being the richest man in the cemetery doesn&rsquo;t matter to me.
+    Going to bed at night saying we&rsquo;ve done something wonderful &mdash;
+    that&rsquo;s what matters to me.&rdquo;
+    <cite>&mdash; Steve Jobs, 1955&ndash;2011</cite>
+  </blockquote>
+  <p class="footnote">Fortunes are popular inflation-adjusted estimates and are, like their owners, not coming back.</p>
+</footer>
+
+<script>
+  const residents = [
+    {
+      name: 'Mansa Musa', dates: '1280 – 1337', fortune: 'Incalculable',
+      fortuneSort: Infinity,
+      bio: 'Emperor of Mali, whose gold-laden pilgrimage to Mecca handed out so much wealth along the way that it crashed the price of gold in Cairo for a decade. Historians simply gave up trying to put a number on his fortune.',
+      epitaph: 'He gave away so much gold it broke the market. The market recovered; he did not.'
+    },
+    {
+      name: 'Jakob Fugger', dates: '1459 – 1525', fortune: '$400B',
+      fortuneSort: 400,
+      bio: '"Fugger the Rich," the Augsburg banker who financed emperors, controlled European copper, and bankrolled the election of Charles V as Holy Roman Emperor.',
+      epitaph: 'He owned the debts of kings. The grave collected his.'
+    },
+    {
+      name: 'John D. Rockefeller', dates: '1839 – 1937', fortune: '$340B',
+      fortuneSort: 340,
+      bio: 'Founder of Standard Oil and, by most estimates, the wealthiest American who ever lived — controlling roughly 90% of US oil at his peak.',
+      epitaph: 'He refined 90% of the oil. The remaining 10% of everything else, he also could not keep.'
+    },
+    {
+      name: 'Andrew Carnegie', dates: '1835 – 1919', fortune: '$310B',
+      fortuneSort: 310,
+      bio: 'Steel magnate who sold Carnegie Steel for the largest personal transaction in history, then spent his last years giving nearly all of it away to libraries, schools, and universities.',
+      epitaph: '"The man who dies rich dies disgraced," he wrote — and did his best to die poor.'
+    },
+    {
+      name: 'Henry Ford', dates: '1863 – 1947', fortune: '$200B',
+      fortuneSort: 200,
+      bio: 'Put the world on wheels with the Model T and the moving assembly line. Paid workers double the going wage so they could afford the cars they built.',
+      epitaph: 'He doubled wages and halved the price of cars. The hearse, however, came standard.'
+    },
+    {
+      name: 'Cornelius Vanderbilt', dates: '1794 – 1877', fortune: '$185B',
+      fortuneSort: 185,
+      bio: 'The Commodore — steamships, then railroads, then almost everything between New York and Chicago. Left a fortune his heirs famously spent within a few generations.',
+      epitaph: 'He owned the railroads. This was the one line he could not avoid riding.'
+    },
+    {
+      name: 'Sam Walton', dates: '1918 – 1992', fortune: '$130B',
+      fortuneSort: 130,
+      bio: 'Founder of Walmart, who built the largest retail empire on earth from a single five-and-dime in Arkansas, and kept driving an old pickup truck the whole time.',
+      epitaph: 'Always low prices. Even his final box was modest.'
+    },
+    {
+      name: 'Howard Hughes', dates: '1905 – 1976', fortune: '$11B',
+      fortuneSort: 11,
+      bio: 'Aviator, filmmaker, industrialist, and recluse. Set air-speed records, built the largest flying boat ever made, and died owning an empire he no longer left his room to see.',
+      epitaph: 'He flew faster than any man alive. The destination was the same.'
+    }
+  ];
+
+  // --- Stars ---
+  const sky = document.getElementById('sky');
+  for (let i = 0; i < 80; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    const size = Math.random() * 2 + 1;
+    s.style.width = size + 'px';
+    s.style.height = size + 'px';
+    s.style.left = Math.random() * 100 + 'vw';
+    s.style.top = Math.random() * 70 + 'vh';
+    s.style.animationDelay = (Math.random() * 3) + 's';
+    s.style.animationDuration = (2 + Math.random() * 4) + 's';
+    sky.appendChild(s);
+  }
+
+  // --- Modal ---
+  const modal = document.getElementById('modal');
+  function openModal(r) {
+    document.getElementById('m-name').textContent = r.name;
+    document.getElementById('m-dates').textContent = r.dates;
+    document.getElementById('m-fortune').textContent = r.fortune;
+    document.getElementById('m-bio').textContent = r.bio;
+    document.getElementById('m-epitaph').textContent = r.epitaph;
+    modal.showModal();
+  }
+  document.getElementById('m-close').addEventListener('click', () => modal.close());
+  modal.addEventListener('click', (e) => { if (e.target === modal) modal.close(); });
+
+  // --- Leaderboard ---
+  const list = document.getElementById('leaderboard-list');
+  const ranked = [...residents].sort((a, b) => b.fortuneSort - a.fortuneSort);
+  ranked.forEach((r) => {
+    const li = document.createElement('li');
+    li.innerHTML = '<span class="name"></span><span class="fortune"></span><span class="took">took: $0</span>';
+    li.querySelector('.name').textContent = r.name;
+    li.querySelector('.fortune').textContent = r.fortune;
+    li.addEventListener('click', () => openModal(r));
+    list.appendChild(li);
+  });
+
+  // --- Tombstones ---
+  const plots = document.getElementById('plots');
+  ranked.forEach((r) => {
+    const t = document.createElement('button');
+    t.className = 'tombstone';
+    t.setAttribute('aria-label', 'View ' + r.name);
+    t.innerHTML =
+      '<span class="cross">&#10013;</span>' +
+      '<span class="t-name"></span>' +
+      '<div class="t-dates"></div>' +
+      '<div class="t-fortune"></div>' +
+      '<div class="t-took">took with them: $0</div>';
+    t.querySelector('.t-name').textContent = r.name;
+    t.querySelector('.t-dates').textContent = r.dates;
+    t.querySelector('.t-fortune').textContent = r.fortune;
+    t.addEventListener('click', () => openModal(r));
+    plots.appendChild(t);
+  });
+</script>
+
+</body>
+</html>
