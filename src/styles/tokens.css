@@ -1,0 +1,255 @@
+/* =========================================================
+   Strategic Generosity Blueprint — Design Tokens
+   Adam Malcolm, CFP, MFA-P · IG Wealth Management
+   Ported from assets/colors_and_type.css. Fonts self-hosted
+   (no Google Fonts request) so nothing loads from the network.
+   ========================================================= */
+
+@font-face {
+  font-family: "Nunito Sans";
+  src: url("/fonts/NunitoSans-VariableFont.ttf") format("truetype-variations");
+  font-weight: 200 1000;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Nunito Sans";
+  src: url("/fonts/NunitoSans-Italic-VariableFont.ttf") format("truetype-variations");
+  font-weight: 200 1000;
+  font-style: italic;
+  font-display: swap;
+}
+
+:root {
+  /* -------- Brand colour palette -------- */
+  --sgb-mid-blue:        #0072CE;  /* Primary / dominant */
+  --sgb-dark-blue:       #001E60;  /* Headlines, nav, anchors */
+  --sgb-light-blue:      #8DD0EF;  /* Accents only */
+  --sgb-slate:           #7E93A7;  /* Digital secondary */
+  --sgb-bg-cool:         #DFE3EB;  /* Light background / rule lines */
+  --sgb-bg-tint:         #F0F8FD;  /* Lightest blue wash */
+  --sgb-white:           #FFFFFF;
+  --sgb-black:           #0A1424;
+
+  /* -------- Semantic status -------- */
+  --sgb-success:         #0F845E;  /* Positive / on-track */
+  --sgb-error:           #D32E1A;  /* Negative return / error only */
+
+  /* -------- Extended neutrals (derived, for UI scale) -------- */
+  --sgb-ink-900:         #001E60;  /* same as dark blue */
+  --sgb-ink-700:         #1F3568;
+  --sgb-ink-500:         #4A5E82;
+  --sgb-ink-400:         #7E93A7;  /* slate */
+  --sgb-ink-300:         #B8C2D1;
+  --sgb-ink-200:         #DFE3EB;
+  --sgb-ink-100:         #EEF2F7;
+  --sgb-ink-50:          #F6F8FB;
+
+  /* -------- Semantic foreground / background -------- */
+  --fg-1:                var(--sgb-dark-blue);   /* headlines, body lead */
+  --fg-2:                var(--sgb-ink-700);     /* body copy */
+  --fg-3:                var(--sgb-ink-500);     /* muted, captions */
+  --fg-4:                var(--sgb-ink-400);     /* labels, axes */
+  --fg-on-blue:          #FFFFFF;
+  --fg-link:             var(--sgb-mid-blue);
+
+  --bg-page:             #FFFFFF;
+  --bg-app:              var(--sgb-bg-tint);     /* app background wash */
+  --bg-card:             #FFFFFF;
+  --bg-subtle:           var(--sgb-ink-50);
+  --bg-rule:             var(--sgb-ink-200);     /* hairlines */
+
+  --border-1:            var(--sgb-ink-200);
+  --border-2:            var(--sgb-ink-300);
+  --border-focus:        var(--sgb-mid-blue);
+
+  /* -------- Chart palette (ordered, no red except error) -------- */
+  --chart-1:             #0072CE;   /* mid blue — primary series */
+  --chart-2:             #001E60;   /* dark blue — comparison */
+  --chart-3:             #8DD0EF;   /* light blue — secondary */
+  --chart-4:             #0F845E;   /* success — positive series */
+  --chart-5:             #7E93A7;   /* slate — reference / peer */
+  --chart-target:        #001E60;   /* dashed target line */
+
+  /* -------- Typography -------- */
+  --font-sans:           "Nunito Sans", Calibri, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  /* Scale — type is left-aligned, sentence case, generous leading */
+  --fs-display:          44px;   /* hero on dashboard landing */
+  --fs-h1:               32px;
+  --fs-h2:               24px;
+  --fs-h3:               20px;
+  --fs-h4:               16px;
+  --fs-body:             15px;
+  --fs-body-sm:          14px;
+  --fs-caption:          12px;
+  --fs-micro:            11px;
+
+  --lh-display:          1.15;
+  --lh-heading:          1.25;
+  --lh-body:             1.55;
+  --lh-tight:            1.35;
+
+  --fw-light:            300;
+  --fw-regular:          400;
+  --fw-medium:           600;
+  --fw-bold:             700;
+  --fw-black:            800;
+
+  --ls-tight:           -0.01em;
+  --ls-normal:           0;
+  --ls-wide:             0.04em;
+  --ls-eyebrow:          0.08em;
+
+  /* -------- Spacing (4px base) -------- */
+  --sp-0:                0;
+  --sp-1:                4px;
+  --sp-2:                8px;
+  --sp-3:                12px;
+  --sp-4:                16px;
+  --sp-5:                20px;
+  --sp-6:                24px;
+  --sp-8:                32px;
+  --sp-10:               40px;
+  --sp-12:               48px;
+  --sp-16:               64px;
+  --sp-20:               80px;
+
+  /* -------- Radii (restrained — no pills except badges) -------- */
+  --radius-sm:           4px;
+  --radius-md:           6px;
+  --radius-lg:           8px;
+  --radius-xl:           12px;
+  --radius-pill:         999px;
+
+  /* -------- Borders -------- */
+  --bw-hairline:         1px;
+  --bw-rule:             1.5px;     /* matches icon stroke */
+  --bw-heavy:            2px;
+
+  /* -------- Elevation -------- */
+  /* No drop shadows per brand. Use borders + tint for separation. */
+  --shadow-none:         none;
+  --shadow-focus:        0 0 0 3px rgba(0, 114, 206, 0.25);
+
+  /* -------- Motion -------- */
+  --ease-standard:       cubic-bezier(0.4, 0.0, 0.2, 1);
+  --ease-out:            cubic-bezier(0.0, 0.0, 0.2, 1);
+  --dur-fast:            120ms;
+  --dur-base:            180ms;
+  --dur-slow:            260ms;
+}
+
+/* =========================================================
+   Base type styles — semantic
+   ========================================================= */
+
+html, body {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: var(--fg-2);
+  background: var(--bg-page);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.sgb-display,
+h1.sgb-display {
+  font-size: var(--fs-display);
+  line-height: var(--lh-display);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-tight);
+  color: var(--fg-1);
+  text-align: left;
+}
+
+h1, .sgb-h1 {
+  font-size: var(--fs-h1);
+  line-height: var(--lh-heading);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-tight);
+  color: var(--fg-1);
+}
+
+h2, .sgb-h2 {
+  font-size: var(--fs-h2);
+  line-height: var(--lh-heading);
+  font-weight: var(--fw-bold);
+  color: var(--fg-1);
+}
+
+h3, .sgb-h3 {
+  font-size: var(--fs-h3);
+  line-height: var(--lh-tight);
+  font-weight: var(--fw-medium);
+  color: var(--fg-1);
+}
+
+h4, .sgb-h4 {
+  font-size: var(--fs-h4);
+  line-height: var(--lh-tight);
+  font-weight: var(--fw-medium);
+  color: var(--fg-1);
+}
+
+p, .sgb-p {
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: var(--fg-2);
+  text-wrap: pretty;
+  max-width: 72ch;
+}
+
+.sgb-lead {
+  font-size: 18px;
+  line-height: 1.5;
+  color: var(--fg-2);
+  font-weight: var(--fw-regular);
+}
+
+.sgb-eyebrow {
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-eyebrow);
+  text-transform: uppercase;
+  color: var(--sgb-mid-blue);
+}
+
+.sgb-caption {
+  font-size: var(--fs-caption);
+  line-height: 1.4;
+  color: var(--fg-3);
+}
+
+.sgb-kpi {
+  font-size: 36px;
+  line-height: 1.1;
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-tight);
+  color: var(--fg-1);
+  font-variant-numeric: tabular-nums;
+}
+
+.sgb-label {
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-medium);
+  color: var(--fg-3);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+}
+
+.sgb-num {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum", "lnum";
+}
+
+a, .sgb-link {
+  color: var(--fg-link);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color var(--dur-fast) var(--ease-standard),
+              color var(--dur-fast) var(--ease-standard);
+}
+a:hover, .sgb-link:hover { border-bottom-color: var(--fg-link); }
+a:focus-visible, .sgb-link:focus-visible { outline: none; box-shadow: var(--shadow-focus); border-radius: 2px; }
