@@ -206,6 +206,8 @@ export const CONTENT = {
     feeDefault: 1.0, // Adam's decision, June 10, 2026; PAG range 0.5–2.5
     feeRange: { min: 0.5, max: 2.5, step: 0.1 },
     gainShareDefault: 50, // default unrealized gain share of non-registered at death, %
+    retireTaxDefault: 25, // average income-tax rate on RRSP/RRIF withdrawals in retirement, %
+    retireTaxRange: { min: 0, max: 55, step: 1 },
     defaults: {
       age: 50,
       retireAge: 65,
@@ -217,7 +219,8 @@ export const CONTENT = {
       spending: 80000,
       style: "balanced",
       feePct: 1.0,
-      gainShare: 50
+      gainShare: 50,
+      retireTax: 25
     },
     cta: "See where I stand",
     chart: {
@@ -241,10 +244,10 @@ export const CONTENT = {
       intro: "Quite a lot, on purpose. This illustration does not include:",
       items: [
         "CPP, OAS and employer pensions",
-        "Income tax while you draw down in retirement",
+        "Exact retirement tax brackets (we apply one average rate to RRSP/RRIF withdrawals)",
         "RRIF minimum withdrawals",
         "Spousal rollovers and income splitting",
-        "Your actual tax bracket (we use the top rate)",
+        "Your exact tax rate at death (we use the top marginal rate)",
         "Insurance, real estate and business assets",
         "Market ups and downs (we use one steady rate)",
         "And everything a conversation would surface"

@@ -1,4 +1,5 @@
-// Projection model (ported verbatim from window.RPG_REAL_RETURN / window.RPG_PROJECT).
+// Projection model (ported from window.RPG_REAL_RETURN / window.RPG_PROJECT, then
+// extended to approximate income tax during decumulation).
 // Annual steps, real (today's) dollars, horizon to age 95. Three accounts tracked
 // separately; savings/spending applied proportionally to balances.
 
@@ -31,35 +32,52 @@ export function project(inputs) {
     return bal.rrsp + bal.tfsa + bal.nonreg;
   }
 
+  // Average income-tax rate applied to the RRSP/RRIF-sourced portion of withdrawals.
+  const retireTaxPct =
+    typeof inputs.retireTax === "number" ? inputs.retireTax : CAL.retireTaxDefault;
+  const retireTaxRate = Math.min(0.95, Math.max(0, retireTaxPct / 100));
+
   const points = [{ age: inputs.age, w: total() }];
   let depletionAge = null;
+  let drawdownTax = 0; // cumulative income tax paid on registered withdrawals (today's $)
 
   for (let a = inputs.age; a < horizon; a++) {
     keys.forEach((k) => {
       bal[k] *= 1 + r;
     });
-    const flow = a < inputs.retireAge ? inputs.savings || 0 : -(inputs.spending || 0);
     const t = total();
-    if (flow >= 0) {
-      if (t <= 0) {
-        keys.forEach((k) => {
-          bal[k] += flow / 3;
-        });
-      } else {
-        keys.forEach((k) => {
-          bal[k] += flow * (bal[k] / t);
-        });
+
+    if (a < inputs.retireAge) {
+      // Accumulation: add savings, split proportionally (equal thirds if empty).
+      const add = inputs.savings || 0;
+      if (add > 0) {
+        if (t <= 0) keys.forEach((k) => { bal[k] += add / 3; });
+        else keys.forEach((k) => { bal[k] += add * (bal[k] / t); });
       }
     } else {
-      if (t + flow <= 0) {
-        keys.forEach((k) => {
-          bal[k] = 0;
-        });
-        if (depletionAge === null) depletionAge = a + 1;
-      } else {
-        keys.forEach((k) => {
-          bal[k] += flow * (bal[k] / t);
-        });
+      // Decumulation: withdraw enough to NET `spending` after income tax on the
+      // RRSP/RRIF-sourced portion of the draw. To net `need` when a fraction
+      // (rrsp/t) of the gross withdrawal is taxable at retireTaxRate, the gross
+      // withdrawal is need / (1 − (rrsp/t)·rate). TFSA and non-registered
+      // withdrawals are treated as tax-free in life (non-registered gains are
+      // still estimated at death).
+      const need = inputs.spending || 0;
+      if (need > 0) {
+        if (t <= 0) {
+          if (depletionAge === null) depletionAge = a + 1;
+        } else {
+          const effTax = (bal.rrsp / t) * retireTaxRate;
+          const gross = need / (1 - effTax);
+          if (gross >= t) {
+            // Portfolio can't fund the full year — exhausted this year.
+            drawdownTax += bal.rrsp * retireTaxRate; // tax on liquidating the registered remainder
+            keys.forEach((k) => { bal[k] = 0; });
+            if (depletionAge === null) depletionAge = a + 1;
+          } else {
+            drawdownTax += gross - need; // == gross · effTax
+            keys.forEach((k) => { bal[k] -= gross * (bal[k] / t); });
+          }
+        }
       }
     }
     points.push({ age: a + 1, w: total() });
@@ -85,10 +103,12 @@ export function project(inputs) {
     cra,
     depletionAge,
     signal,
+    drawdownTax,
     endBalances: { rrsp: bal.rrsp, tfsa: bal.tfsa, nonreg: bal.nonreg },
     breakdown: { rrspTax, capTax, probate },
     province: prov,
     gainShare,
+    retireTax: retireTaxPct,
     styleName: rr.style.name,
     styleMix: rr.style.mix,
     gross: rr.style.gross,

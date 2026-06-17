@@ -16,7 +16,10 @@ the browser, so the experience makes no third-party network calls on its own.
 4. **Projection calculator** — age, province, RRSP/TFSA/non-registered balances, savings,
    spending and investment style feed a year-by-year projection to age 95, with estate and
    estimated tax-at-death figures (FP Canada 2026 assumptions; EY provincial tax cards;
-   IG probate schedules).
+   IG probate schedules). Retirement withdrawals are grossed up for income tax: the
+   RRSP/RRIF-sourced portion of each draw is taxed at an editable average rate (default 25%);
+   TFSA and non-registered withdrawals are treated as tax-free in life (non-registered gains
+   are still estimated at death). All assumptions are visible and adjustable in the drawer.
 5. **Result** — a gauge and one of four profiles are shown for free; the full projection,
    the explanation and the biggest opportunity **unlock** after the visitor enters their
    name + email and opts to share their result profile and investable-asset total.

@@ -36,7 +36,7 @@ for (const [k, inp] of Object.entries(cases)) {
 }
 console.log("Signal expectations:");
 check("A grows to an estate (Building)", sig.A === "Building");
-check("D surplus is High", sig.D === "High");
+check("D ends below start after drawdown tax (Building)", sig.D === "Building", sig.D);
 check("B depletes (Low)", sig.B === "Low", sig.B);
 check("C depletes (Low)", sig.C === "Low", sig.C);
 
@@ -63,6 +63,21 @@ check("high intent + High  -> D", score(hi, { signal: "High" }).profile === "D")
 check("low intent  + High  -> A", score(lo, { signal: "High" }).profile === "A");
 check("high intent + Build -> B", score(hi, { signal: "Building" }).profile === "B");
 check("low intent  + Build -> C", score(lo, { signal: "Building" }).profile === "C");
+
+// 4) Decumulation tax — gross-up of the RRSP/RRIF-sourced portion of withdrawals.
+console.log("Drawdown tax:");
+const base = { age: 65, retireAge: 65, province: "ON", savings: 0, spending: 50000, style: "balanced", feePct: 1.0, gainShare: 50, retireTax: 25 };
+const allR = project({ ...base, rrsp: 1000000, tfsa: 0, nonreg: 0 });
+const allT = project({ ...base, rrsp: 0, tfsa: 1000000, nonreg: 0 });
+check("RRSP drained faster than TFSA (tax drag)", allR.depletionAge < allT.depletionAge, allR.depletionAge + " < " + allT.depletionAge);
+check("TFSA withdrawals incur no drawdown tax", allT.drawdownTax === 0, String(Math.round(allT.drawdownTax)));
+check("RRSP withdrawals incur drawdown tax", allR.drawdownTax > 0, String(Math.round(allR.drawdownTax)));
+// Hand check: yr1 all-RRSP → grow 1,000,000·1.0202 = 1,020,200; gross = 50,000/(1−0.25) = 66,666.67; end = 953,533.33
+const y1 = project({ ...base, rrsp: 1000000, tfsa: 0, nonreg: 0 }).points[1].w;
+check("gross-up yr1 balance = 953,533 (hand-verified)", Math.round(y1) === 953533, String(Math.round(y1)));
+// retireTax = 0 reproduces the old gross = net behaviour (1,020,200 − 50,000)
+const y1NoTax = project({ ...base, rrsp: 1000000, tfsa: 0, nonreg: 0, retireTax: 0 }).points[1].w;
+check("retireTax=0 → no gross-up", Math.round(y1NoTax) === 970200, String(Math.round(y1NoTax)));
 
 console.log("\n" + pass + " passed, " + fail + " failed");
 process.exit(fail ? 1 : 0);

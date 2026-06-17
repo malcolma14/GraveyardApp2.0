@@ -277,6 +277,35 @@ function AssumptionsDrawer({ projection, onSet }) {
               </dd>
             </div>
             <div className="rpg-assumptions-item">
+              <dt>Tax on RRSP/RRIF withdrawals (average {Math.round(p.retireTax)}%)</dt>
+              <dd>
+                {onSet ? (
+                  <span className="rpg-drawer-editrow">
+                    <DrawerStepper
+                      value={p.retireTax}
+                      min={CAL.retireTaxRange.min}
+                      max={CAL.retireTaxRange.max}
+                      step={CAL.retireTaxRange.step}
+                      format={(v) => v + "%"}
+                      label="retirement tax rate"
+                      onChange={(v) => onSet("retireTax", v)}
+                    ></DrawerStepper>
+                    <span>
+                      Average rate applied to the RRSP/RRIF portion of each withdrawal so your
+                      spending is after-tax. Default 25%.
+                    </span>
+                  </span>
+                ) : (
+                  "Average " +
+                  Math.round(p.retireTax) +
+                  "% applied to the RRSP/RRIF portion of each withdrawal so your spending is after-tax."
+                )}{" "}
+                TFSA and non-registered withdrawals are treated as tax-free in life (non-registered
+                gains are still estimated at death). Estimated income tax on withdrawals over
+                retirement: {FMT.moneyRough(p.drawdownTax)}.
+              </dd>
+            </div>
+            <div className="rpg-assumptions-item">
               <dt>Tax at death ({p.province.name})</dt>
               <dd>
                 RRSP/RRIF balance taxed as income at the top combined rate ({FMT.pct2(p.province.ord)}).
