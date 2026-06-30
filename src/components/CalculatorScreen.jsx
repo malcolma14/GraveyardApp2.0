@@ -1,7 +1,7 @@
 // Projection calculator: chart, drawers, input controls, and the calculator screen.
 // Ported from app/calculator.jsx. ProjectionPanel is reused by the result screen.
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { CONTENT } from "../data/content.js";
 import { FMT } from "../data/fmt.js";
 import { PROVINCES } from "../data/provinces.js";
@@ -197,15 +197,17 @@ function DrawerStepper({ value, min, max, step, format, onChange, label }) {
 /* Assumptions drawer ----------------------------------------------------------------
    Items are built from the live projection so the arithmetic is always honest.
    When onSet is provided (calculator screen), fee and gain share are editable. */
-function AssumptionsDrawer({ projection, onSet }) {
+function AssumptionsDrawer({ projection, onSet, open: openProp, onOpenChange, containerRef }) {
   const CAL = CONTENT.calculator;
   const A = CAL.assumptions;
-  const [open, setOpen] = useState(false);
+  const [openInternal, setOpenInternal] = useState(false);
+  const open = openProp !== undefined ? openProp : openInternal;
+  const setOpen = (v) => (openProp !== undefined ? onOpenChange && onOpenChange(v) : setOpenInternal(v));
   const p = projection;
   const realPct = (p.realReturn * 100).toFixed(1);
 
   return (
-    <div className="rpg-assumptions">
+    <div className="rpg-assumptions" ref={containerRef}>
       <button className="rpg-link rpg-assumptions-toggle" onClick={() => setOpen(!open)} aria-expanded={open}>
         <svg
           width="16"
@@ -409,7 +411,17 @@ function LeavesOutDrawer() {
 }
 
 /* The chart panel: badge + chart + figures + disclaimer + drawers, used everywhere ------- */
-export function ProjectionPanel({ projection, inputs, big, height, compactLabels, onSet }) {
+export function ProjectionPanel({
+  projection,
+  inputs,
+  big,
+  height,
+  compactLabels,
+  onSet,
+  assumptionsOpen,
+  onAssumptionsOpenChange,
+  assumptionsRef
+}) {
   const C = CONTENT.calculator.chart;
   return (
     <div className="rpg-proj-panel">
@@ -419,7 +431,13 @@ export function ProjectionPanel({ projection, inputs, big, height, compactLabels
       <ProjectionChart projection={projection} inputs={inputs} height={height} compactLabels={compactLabels} />
       <ProjectionFigures projection={projection} big={big} />
       <p className="rpg-proj-disclaimer">{C.disclaimer}</p>
-      <AssumptionsDrawer projection={projection} onSet={onSet} />
+      <AssumptionsDrawer
+        projection={projection}
+        onSet={onSet}
+        open={assumptionsOpen}
+        onOpenChange={onAssumptionsOpenChange}
+        containerRef={assumptionsRef}
+      />
       <LeavesOutDrawer />
     </div>
   );
@@ -484,7 +502,7 @@ function Stepper({ value, min, max, step, onChange, format, parse, labelId, suff
   );
 }
 
-function CalcField({ def, value, onChange }) {
+function CalcField({ def, value, onChange, onShowAssumptions }) {
   const CAL = CONTENT.calculator;
   const labelId = "rpg-calc-" + def.id;
 
@@ -539,21 +557,30 @@ function CalcField({ def, value, onChange }) {
     );
   } else if (def.kind === "style") {
     control = (
-      <div className="rpg-style-cards" role="group" aria-labelledby={labelId}>
-        {CAL.styles.map((s) => (
-          <button
-            key={s.id}
-            type="button"
-            className={"rpg-style-card" + (value === s.id ? " rpg-style-card--selected" : "")}
-            aria-pressed={value === s.id}
-            onClick={() => onChange(s.id)}
-          >
-            <span className="rpg-style-card-name">{s.name}</span>
-            <span className="rpg-style-card-blurb">{s.blurb}</span>
-            <span className="rpg-style-card-rate">~{s.gross.toFixed(1)}%/yr*</span>
+      <>
+        <div className="rpg-style-cards" role="group" aria-labelledby={labelId}>
+          {CAL.styles.map((s) => (
+            <button
+              key={s.id}
+              type="button"
+              className={"rpg-style-card" + (value === s.id ? " rpg-style-card--selected" : "")}
+              aria-pressed={value === s.id}
+              onClick={() => onChange(s.id)}
+            >
+              <span className="rpg-style-card-name">{s.name}</span>
+              <span className="rpg-style-card-blurb">{s.blurb}</span>
+              <span className="rpg-style-card-rate">~{s.gross.toFixed(1)}%/yr*</span>
+            </button>
+          ))}
+        </div>
+        <p className="rpg-support rpg-calc-helper">
+          *Gross return, before fees and inflation. Both are applied in the projection —{" "}
+          <button type="button" className="rpg-link" onClick={onShowAssumptions}>
+            see the full methodology
           </button>
-        ))}
-      </div>
+          .
+        </p>
+      </>
     );
   }
 
@@ -577,16 +604,38 @@ export function CalculatorScreen({ inputs, onInputs, onDone, onBack, isDesktop }
   const projection = useMemo(() => project(inputs), [inputs]);
   const [mobileStep, setMobileStep] = useState(0);
   const [chartOpen, setChartOpen] = useState(false);
+  const [assumptionsOpen, setAssumptionsOpen] = useState(false);
+  const [scrollSignal, setScrollSignal] = useState(0);
+  const assumptionsRef = useRef(null);
   const total = CAL.inputs.length;
 
   function set(id, v) {
     onInputs(Object.assign({}, inputs, { [id]: v }));
   }
 
+  // Open the Assumptions drawer (and, on mobile, the chart strip) from the
+  // style-card footnote link, then bring the drawer into view.
+  function showAssumptions() {
+    setChartOpen(true);
+    setAssumptionsOpen(true);
+    setScrollSignal((n) => n + 1);
+  }
+
   // Keep the active input in view when stepping on mobile.
   useEffect(() => {
     if (!isDesktop) window.scrollTo(0, 0);
   }, [mobileStep, isDesktop]);
+
+  // Scroll the Assumptions drawer into view after showAssumptions() opens it.
+  useEffect(() => {
+    if (!scrollSignal) return;
+    const id = window.requestAnimationFrame(() => {
+      if (assumptionsRef.current) {
+        assumptionsRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    });
+    return () => window.cancelAnimationFrame(id);
+  }, [scrollSignal]);
 
   if (isDesktop) {
     return (
@@ -606,7 +655,13 @@ export function CalculatorScreen({ inputs, onInputs, onDone, onBack, isDesktop }
             </p>
             <div className="rpg-calc-fieldlist">
               {CAL.inputs.map((def) => (
-                <CalcField key={def.id} def={def} value={inputs[def.id]} onChange={(v) => set(def.id, v)} />
+                <CalcField
+                  key={def.id}
+                  def={def}
+                  value={inputs[def.id]}
+                  onChange={(v) => set(def.id, v)}
+                  onShowAssumptions={showAssumptions}
+                />
               ))}
             </div>
             <div style={{ marginTop: "28px" }}>
@@ -620,7 +675,14 @@ export function CalculatorScreen({ inputs, onInputs, onDone, onBack, isDesktop }
               <p className="rpg-eyebrow" style={{ marginBottom: "12px" }}>
                 Wealth, today's dollars
               </p>
-              <ProjectionPanel projection={projection} inputs={inputs} onSet={set} />
+              <ProjectionPanel
+                projection={projection}
+                inputs={inputs}
+                onSet={set}
+                assumptionsOpen={assumptionsOpen}
+                onAssumptionsOpenChange={setAssumptionsOpen}
+                assumptionsRef={assumptionsRef}
+              />
             </div>
           </div>
         </div>
@@ -656,7 +718,16 @@ export function CalculatorScreen({ inputs, onInputs, onDone, onBack, isDesktop }
         </button>
         {chartOpen ? (
           <div className="rpg-chartstrip-body">
-            <ProjectionPanel projection={projection} inputs={inputs} height={210} compactLabels={true} onSet={set} />
+            <ProjectionPanel
+              projection={projection}
+              inputs={inputs}
+              height={210}
+              compactLabels={true}
+              onSet={set}
+              assumptionsOpen={assumptionsOpen}
+              onAssumptionsOpenChange={setAssumptionsOpen}
+              assumptionsRef={assumptionsRef}
+            />
           </div>
         ) : (
           <div className="rpg-chartstrip-mini" aria-hidden="true">
@@ -694,7 +765,12 @@ export function CalculatorScreen({ inputs, onInputs, onDone, onBack, isDesktop }
       </div>
 
       <div className="rpg-calc-mobilefield">
-        <CalcField def={def} value={inputs[def.id]} onChange={(v) => set(def.id, v)} />
+        <CalcField
+          def={def}
+          value={inputs[def.id]}
+          onChange={(v) => set(def.id, v)}
+          onShowAssumptions={showAssumptions}
+        />
       </div>
 
       <div style={{ marginTop: "28px" }}>
