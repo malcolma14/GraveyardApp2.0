@@ -174,7 +174,13 @@ export const CONTENT = {
         step: 5000,
         suffix: "per year, today's dollars"
       },
-      { id: "style", label: "How is your money invested?", kind: "style" }
+      {
+        id: "style",
+        label: "How is your money invested?",
+        kind: "style",
+        helper:
+          "*Gross return, before fees and inflation. Both are applied in the projection — see the Assumptions section for the full methodology."
+      }
     ],
     // FP Canada 2026 PAG nominal returns before fees:
     // short term 2.4%, fixed income 3.2%, Cdn eq 6.3%, US eq 6.4%, intl dev 6.6%, EM 7.5%.

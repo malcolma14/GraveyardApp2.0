@@ -484,7 +484,7 @@ function Stepper({ value, min, max, step, onChange, format, parse, labelId, suff
   );
 }
 
-function CalcField({ def, value, onChange, feePct }) {
+function CalcField({ def, value, onChange }) {
   const CAL = CONTENT.calculator;
   const labelId = "rpg-calc-" + def.id;
 
@@ -540,22 +540,19 @@ function CalcField({ def, value, onChange, feePct }) {
   } else if (def.kind === "style") {
     control = (
       <div className="rpg-style-cards" role="group" aria-labelledby={labelId}>
-        {CAL.styles.map((s) => {
-          const real = s.gross - (feePct || CAL.feeDefault) - CAL.inflation;
-          return (
-            <button
-              key={s.id}
-              type="button"
-              className={"rpg-style-card" + (value === s.id ? " rpg-style-card--selected" : "")}
-              aria-pressed={value === s.id}
-              onClick={() => onChange(s.id)}
-            >
-              <span className="rpg-style-card-name">{s.name}</span>
-              <span className="rpg-style-card-blurb">{s.blurb}</span>
-              <span className="rpg-style-card-rate">~{real.toFixed(1)}%/yr after inflation and fees</span>
-            </button>
-          );
-        })}
+        {CAL.styles.map((s) => (
+          <button
+            key={s.id}
+            type="button"
+            className={"rpg-style-card" + (value === s.id ? " rpg-style-card--selected" : "")}
+            aria-pressed={value === s.id}
+            onClick={() => onChange(s.id)}
+          >
+            <span className="rpg-style-card-name">{s.name}</span>
+            <span className="rpg-style-card-blurb">{s.blurb}</span>
+            <span className="rpg-style-card-rate">~{s.gross.toFixed(1)}%/yr*</span>
+          </button>
+        ))}
       </div>
     );
   }
@@ -609,7 +606,7 @@ export function CalculatorScreen({ inputs, onInputs, onDone, onBack, isDesktop }
             </p>
             <div className="rpg-calc-fieldlist">
               {CAL.inputs.map((def) => (
-                <CalcField key={def.id} def={def} value={inputs[def.id]} onChange={(v) => set(def.id, v)} feePct={inputs.feePct} />
+                <CalcField key={def.id} def={def} value={inputs[def.id]} onChange={(v) => set(def.id, v)} />
               ))}
             </div>
             <div style={{ marginTop: "28px" }}>
@@ -697,7 +694,7 @@ export function CalculatorScreen({ inputs, onInputs, onDone, onBack, isDesktop }
       </div>
 
       <div className="rpg-calc-mobilefield">
-        <CalcField def={def} value={inputs[def.id]} onChange={(v) => set(def.id, v)} feePct={inputs.feePct} />
+        <CalcField def={def} value={inputs[def.id]} onChange={(v) => set(def.id, v)} />
       </div>
 
       <div style={{ marginTop: "28px" }}>
