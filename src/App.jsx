@@ -21,12 +21,18 @@ const MINDSET = CONTENT.mindset;
 const TOTAL_Q = MINDSET.length; // 8
 
 // step encoding: -1 landing, 0..7 mindset question, 100 bridge, 150 calculator, 200 result
+// A corrupt/stale blob must never survive into render (it would crash on every
+// reload with no in-app recovery) — validate strictly and fall back to a fresh start.
 function loadProgress() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
     const p = JSON.parse(raw);
-    if (typeof p.step !== "number" || typeof p.answers !== "object") return null;
+    const stepOk =
+      [-1, 100, 150, 200].includes(p.step) ||
+      (Number.isInteger(p.step) && p.step >= 0 && p.step < TOTAL_Q);
+    const answersOk = !!p.answers && typeof p.answers === "object" && !Array.isArray(p.answers);
+    if (!stepOk || !answersOk) return null;
     return p;
   } catch (e) {
     return null;
@@ -120,7 +126,7 @@ export function App() {
     );
   } else {
     const q = MINDSET[step];
-    screen = (
+    screen = q ? (
       <QuestionScreen
         key={q.id}
         q={q}
@@ -131,6 +137,9 @@ export function App() {
         onBack={() => (step === 0 ? setStep(-1) : setStep(step - 1))}
         advanceDelay={ADVANCE_DELAY}
       />
+    ) : (
+      // Unknown step (shouldn't happen post-validation) — land safely instead of crashing.
+      <Landing onStart={() => setStep(0)} />
     );
   }
 
