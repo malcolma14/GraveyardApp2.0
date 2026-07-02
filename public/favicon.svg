@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Brand tile with the projection-chart motif (rising wealth curve + marker). -->
+  <rect width="64" height="64" rx="14" fill="#001E60"/>
+  <path d="M10 46 C 22 44, 26 30, 34 24 C 42 18, 50 18, 53 19.5 L 53 50 L 10 50 Z" fill="#0072CE" opacity="0.55"/>
+  <path d="M10 46 C 22 44, 26 30, 34 24 C 42 18, 50 18, 53 19.5" fill="none" stroke="#8DD0EF" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="53" cy="19.5" r="4.5" fill="#FFFFFF"/>
+</svg>

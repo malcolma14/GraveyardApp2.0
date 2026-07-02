@@ -63,14 +63,18 @@ note.
 ## Deploy (Vercel)
 
 Vercel auto-detects the Vite build (`dist/`) and the function in `api/`. Connect the repo,
-set the environment variables above, and deploy. No `vercel.json` is required.
+set the environment variables above, and deploy. `vercel.json` only sets response headers
+(CSP and friends, plus long-lived caching for fonts) — build and routing stay auto-detected.
+New Mailchimp contacts are created as **pending** (double opt-in): they confirm by email
+before joining the audience.
 
 ## Design source
 
 Recreated from the Claude Design handoff (`Graveyard_App_Design_Filehandoff.zip`). Brand
 tokens live in [`src/styles/tokens.css`](src/styles/tokens.css); component styles in
-[`src/styles/app.css`](src/styles/app.css). Copy that touches privacy/compliance is marked
-`[Final wording per IG compliance.]` and should be reviewed before launch.
+[`src/styles/app.css`](src/styles/app.css). The disclaimer, consent and privacy strings in
+[`src/data/content.js`](src/data/content.js) are interim wording pending IG compliance
+sign-off (see the note at the top of that file).
 
 > This tool is for education and reflection. It is not financial, tax or legal advice and it
 > is not a financial plan.
