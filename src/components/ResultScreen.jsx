@@ -21,17 +21,39 @@ export function ResultScreen({ profileKey, scores, projection, inputs, animate, 
     setUnlocked(true);
   }
 
+  function fallbackCopy(url) {
+    try {
+      const ta = document.createElement("textarea");
+      ta.value = url;
+      ta.setAttribute("readonly", "");
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      const ok = document.execCommand("copy");
+      document.body.removeChild(ta);
+      return ok;
+    } catch (e) {
+      return false;
+    }
+  }
+
   function copyLink() {
     const url = window.location.href.split("#")[0];
+    // Only claim "Link copied" when a copy actually happened.
+    const done = (ok) => {
+      if (!ok) return;
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2400);
+    };
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(url).then(
-        () => setCopied(true),
-        () => setCopied(true)
+        () => done(true),
+        () => done(fallbackCopy(url))
       );
     } else {
-      setCopied(true);
+      done(fallbackCopy(url));
     }
-    setTimeout(() => setCopied(false), 2400);
   }
 
   const showLead =

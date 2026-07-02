@@ -70,7 +70,7 @@ export function ProjectionChart({ projection, inputs, height, compactLabels }) {
         strokeWidth="1"
         strokeDasharray="2 4"
       />
-      <text x={m.left} y={y(peakW) - 6} fontSize="11" fontWeight="600" fill="var(--sgb-slate)" fontFamily="inherit">
+      <text x={m.left} y={y(peakW) - 6} fontSize="11" fontWeight="600" fill="var(--sgb-ink-500)" fontFamily="inherit">
         {FMT.compact(peakW)}
       </text>
 
@@ -94,7 +94,7 @@ export function ProjectionChart({ projection, inputs, height, compactLabels }) {
             y={m.top - 12}
             fontSize="11"
             fontWeight="700"
-            fill="var(--sgb-slate)"
+            fill="var(--sgb-ink-500)"
             fontFamily="inherit"
             textAnchor="middle"
             letterSpacing="0.06em"
@@ -124,10 +124,10 @@ export function ProjectionChart({ projection, inputs, height, compactLabels }) {
         {endLabel}
       </text>
 
-      <text x={m.left} y={H - 10} fontSize="11" fontWeight="600" fill="var(--sgb-slate)" fontFamily="inherit">
+      <text x={m.left} y={H - 10} fontSize="11" fontWeight="600" fill="var(--sgb-ink-500)" fontFamily="inherit">
         Age {ageMin}
       </text>
-      <text x={W - m.right} y={H - 10} fontSize="11" fontWeight="600" fill="var(--sgb-slate)" fontFamily="inherit" textAnchor="end">
+      <text x={W - m.right} y={H - 10} fontSize="11" fontWeight="600" fill="var(--sgb-ink-500)" fontFamily="inherit" textAnchor="end">
         95
       </text>
     </svg>
@@ -446,7 +446,7 @@ export function ProjectionPanel({
 }
 
 /* Input controls ------------------------------------------------------------------------ */
-function Stepper({ value, min, max, step, onChange, format, parse, labelId, suffix }) {
+function Stepper({ value, min, max, step, onChange, format, parse, labelId, label, suffix }) {
   const [text, setText] = useState(format(value));
   useEffect(() => {
     setText(format(value));
@@ -465,14 +465,23 @@ function Stepper({ value, min, max, step, onChange, format, parse, labelId, suff
     onChange(v);
     setText(format(v));
   }
+  // Step from the latest typed text, not the value prop — "type 60, click +"
+  // must yield 61, not stale-prop + 1.
+  function stepBy(dir) {
+    const n = parse(text);
+    const base = isNaN(n) ? value : clamp(n);
+    const v = clamp(base + dir * step);
+    onChange(v);
+    setText(format(v));
+  }
 
   return (
     <div className="rpg-stepper">
       <button
         type="button"
         className="rpg-stepper-btn"
-        aria-label="Decrease"
-        onClick={() => onChange(clamp(value - step))}
+        aria-label={"Decrease " + label}
+        onClick={() => stepBy(-1)}
         disabled={value <= min}
       >
         &#8722;
@@ -494,8 +503,8 @@ function Stepper({ value, min, max, step, onChange, format, parse, labelId, suff
       <button
         type="button"
         className="rpg-stepper-btn"
-        aria-label="Increase"
-        onClick={() => onChange(clamp(value + step))}
+        aria-label={"Increase " + label}
+        onClick={() => stepBy(1)}
         disabled={value >= max}
       >
         +
@@ -520,6 +529,7 @@ function CalcField({ def, value, onChange, onShowAssumptions }) {
         format={(n) => String(n)}
         parse={(s) => parseInt(String(s).replace(/[^\d]/g, ""), 10)}
         labelId={labelId}
+        label={def.label}
         suffix={def.suffix}
       />
     );
@@ -534,6 +544,7 @@ function CalcField({ def, value, onChange, onShowAssumptions }) {
         format={(n) => "$" + n.toLocaleString("en-CA")}
         parse={(s) => parseInt(String(s).replace(/[^\d]/g, ""), 10)}
         labelId={labelId}
+        label={def.label}
         suffix={def.suffix}
       />
     );

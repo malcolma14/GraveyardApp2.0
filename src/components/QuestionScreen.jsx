@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import { CheckIcon, BackIcon } from "./icons.jsx";
 
-function ProgressHeader({ number, total, onBack, canBack }) {
+function ProgressHeader({ number, total, onBack }) {
   return (
     <div className="rpg-progress">
       <div className="rpg-progress-row">
         <button
-          className={"rpg-back" + (canBack ? "" : " rpg-back--hidden")}
+          className="rpg-back"
           onClick={onBack}
           aria-label="Go back to the previous question"
         >
@@ -55,7 +55,7 @@ export function QuestionScreen({ q, number, total, selected, onAnswer, onBack, a
 
   return (
     <div className="rpg-screen" data-screen-label={"Question " + number}>
-      <ProgressHeader number={number} total={total} onBack={onBack} canBack={true} />
+      <ProgressHeader number={number} total={total} onBack={onBack} />
       <h1 className="rpg-headline rpg-headline--question">{q.question}</h1>
       {q.context ? (
         <p className="rpg-support" style={{ marginTop: "12px" }}>

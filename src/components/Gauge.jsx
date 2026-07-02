@@ -58,13 +58,11 @@ export function Gauge({ intent, surplus, animate }) {
   }
 
   return (
-    <div
-      className="rpg-gauge-wrap"
-      aria-label="Gauge showing where your intentionality and surplus signal sit, from low to high"
-    >
+    <div className="rpg-gauge-wrap">
       <svg
         viewBox="0 0 340 196"
         role="img"
+        aria-label="Gauge showing where your intentionality and surplus signal sit, from low to high"
         style={{ width: "100%", maxWidth: "420px", margin: "0 auto", display: "block" }}
       >
         {/* band */}
@@ -88,7 +86,7 @@ export function Gauge({ intent, surplus, animate }) {
         {needle(intent, "var(--sgb-mid-blue)", true)}
         {needle(surplus, "var(--sgb-dark-blue)", false)}
         <circle cx={cx} cy={cy} r="7" fill="var(--sgb-dark-blue)" />
-        <text x={sx - 4} y={cy + 22} fontSize="13" fontWeight="600" fill="var(--sgb-slate)" fontFamily="inherit">
+        <text x={sx - 4} y={cy + 22} fontSize="13" fontWeight="600" fill="var(--sgb-ink-500)" fontFamily="inherit">
           Low
         </text>
         <text
@@ -96,7 +94,7 @@ export function Gauge({ intent, surplus, animate }) {
           y={cy + 22}
           fontSize="13"
           fontWeight="600"
-          fill="var(--sgb-slate)"
+          fill="var(--sgb-ink-500)"
           fontFamily="inherit"
           textAnchor="end"
         >
