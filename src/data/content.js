@@ -1,7 +1,10 @@
 // The Richest Person in the Graveyard — all visitor-facing copy.
 // Ported from the design handoff (app/data.js → window.RPG_DATA). Privacy and
-// gate copy revised for the "unlock your full results" flow; final wording is
-// still subject to IG compliance review (see [Final wording per IG compliance.]).
+// gate copy revised for the "unlock your full results" flow.
+// NOTE: IG compliance sign-off is still pending for the chart disclaimer, the
+// email-consent text, and the footer disclaimer/privacy strings. The former
+// "[Final wording per IG compliance.]" placeholders were removed from the
+// user-visible strings; the wording below is interim until compliance approves.
 
 export const CONTENT = {
   landing: {
@@ -232,7 +235,7 @@ export const CONTENT = {
       },
       depletedNote: "That's not failure. That's money doing its job, funding a life.",
       disclaimer:
-        "This is a simplified educational illustration, not financial advice and not a financial plan. It leaves out a great deal that matters. Results depend entirely on the assumptions shown, and your real numbers will differ. [Final wording per IG compliance.]"
+        "This is a simplified educational illustration, not financial advice and not a financial plan. It leaves out a great deal that matters. Results depend entirely on the assumptions shown, and your real numbers will differ."
     },
     assumptions: {
       title: "Assumptions",
@@ -316,14 +319,14 @@ export const CONTENT = {
     body:
       "Enter your details to reveal your full projection, what it means for you, and your biggest opportunity — and I'll send a short guide of concrete next steps for people who land where you did.",
     consent:
-      "Yes — show my full results and send the guide. I'm OK sharing my result and the investable-asset total I entered so Adam can tailor it. Unsubscribe anytime. [Final wording per IG compliance.]",
+      "Yes — show my full results and send the guide. I'm OK sharing my result and the investable-asset total I entered so Adam can tailor it. Unsubscribe anytime.",
     button: "Show my full results"
   },
 
   thankYou: {
     heading: "It's on the way.",
     body:
-      "Check your inbox in the next few minutes. And if your result raised a question you'd rather talk through with a person, that's what I'm here for.",
+      "Check your inbox in the next few minutes — confirm your email there and the guide will follow. And if your result raised a question you'd rather talk through with a person, that's what I'm here for.",
     cta: "Book a conversation, no agenda required."
   },
 
@@ -333,11 +336,11 @@ export const CONTENT = {
 
   footer: {
     disclaimer:
-      "This tool is for education and reflection. It is not financial, tax or legal advice and it is not a financial plan. Projections are simplified illustrations based on the stated assumptions, not forecasts. [Final wording per IG compliance.]",
+      "This tool is for education and reflection. It is not financial, tax or legal advice and it is not a financial plan. Projections are simplified illustrations based on the stated assumptions, not forecasts.",
     preparedBy: "Prepared by Adam Malcolm, CFP, MFA-P, IG Wealth Management",
     // Revised: discloses exactly what leaves the device on unlock.
     privacy:
-      "Your detailed answers and numbers are processed in your browser. To unlock your full results, your name, email, result profile and the investable-asset total you entered are sent to Adam Malcolm at IG Wealth Management. Nothing else leaves your device. [Final wording per IG compliance.]"
+      "Your detailed answers and numbers are processed in your browser. To unlock your full results, your name, email, result profile and the investable-asset total you entered are sent to Adam Malcolm at IG Wealth Management. Nothing else leaves your device."
   }
 };
 
