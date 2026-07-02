@@ -77,12 +77,7 @@ export function ResultScreen({ profileKey, scores, projection, inputs, animate, 
       {!unlocked ? (
         <Reveal animate={animate} delay={1900}>
           <p className="rpg-result-hook">{CONTENT.resultGateHook}</p>
-          <EmailGate
-            profile={profileKey}
-            profileName={R.name}
-            investableAssets={investableAssets}
-            onUnlock={handleUnlock}
-          />
+          <EmailGate profile={profileKey} investableAssets={investableAssets} onUnlock={handleUnlock} />
         </Reveal>
       ) : (
         <>
