@@ -79,5 +79,57 @@ check("gross-up yr1 balance = 953,533 (hand-verified)", Math.round(y1) === 95353
 const y1NoTax = project({ ...base, rrsp: 1000000, tfsa: 0, nonreg: 0, retireTax: 0 }).points[1].w;
 check("retireTax=0 → no gross-up", Math.round(y1NoTax) === 970200, String(Math.round(y1NoTax)));
 
+// 5) Edge cases.
+console.log("Edge cases:");
+const zero = { age: 50, retireAge: 65, province: "ON", rrsp: 0, tfsa: 0, nonreg: 0, savings: 0, spending: 0, style: "balanced", feePct: 1.0, gainShare: 50 };
+const pz = project(zero);
+check("empty portfolio is not 'High'", pz.signal !== "High", pz.signal);
+check("empty portfolio: estate = 0, cra = 0", pz.estate === 0 && pz.cra === 0);
+
+const spendZero = project({ ...cases.B, spending: 0 });
+check("spending=0 never depletes (High)", spendZero.depletionAge === null && spendZero.signal === "High", spendZero.signal);
+
+const savingsSplit = project({ ...zero, savings: 30000 });
+check("zero balances: savings split equal thirds yr1", Math.round(savingsSplit.points[1].w) === 30000,
+  String(Math.round(savingsSplit.points[1].w)));
+
+// retireAge below current age = already retired; identical to retiring this year.
+const already = project({ ...base, rrsp: 1000000, tfsa: 0, nonreg: 0, retireAge: 55 }).points[1].w;
+check("retireAge < age decumulates immediately", Math.round(already) === 953533, String(Math.round(already)));
+
+const depleted = project(cases.B);
+check("depleted run: estate = 0, cra = 0, signal Low",
+  depleted.estate === 0 && depleted.cra === 0 && depleted.signal === "Low");
+
+const pa = project(cases.A);
+const sum = pa.breakdown.rrspTax + pa.breakdown.capTax + pa.breakdown.probate;
+check("breakdown components sum to cra", Math.abs(sum - pa.cra) < 1e-6, FMT.money(pa.cra));
+
+// 6) Input hardening — persisted/programmatic state bypasses the UI clamps.
+console.log("Hardening:");
+const weird = project({ ...cases.A, rrsp: "abc", feePct: -5, gainShare: 500, age: 5, retireAge: 200, retireTax: 400 });
+check("non-numeric balance does not produce NaN", Number.isFinite(weird.estate));
+check("gainShare clamped to 100%", weird.gainShare === 1, String(weird.gainShare));
+check("fee clamped into PAG range", weird.fee === 0.5, String(weird.fee));
+check("age clamped into input range", weird.points[0].age === 18, String(weird.points[0].age));
+check("retireTax clamped into range", weird.retireTax === 55, String(weird.retireTax));
+
+check("score(null answers) does not throw and scores 0", (() => {
+  try { return score(null, { signal: "Low" }).intentionality === 0; } catch { return false; }
+})());
+check("score with out-of-range answer index does not throw", (() => {
+  try { return typeof score({ q1: 9 }, { signal: "Low" }).intentionality === "number"; } catch { return false; }
+})());
+check("score without projection → signal Low", score({}, undefined).signal === "Low");
+
+// 7) Formatting guards.
+console.log("Formatting:");
+check("money(NaN) = $0", FMT.money(NaN) === "$0", FMT.money(NaN));
+check("money(-1234) = -$1,234", FMT.money(-1234) === "-$1,234", FMT.money(-1234));
+check("compact(-2500000) = -$2.5M", FMT.compact(-2500000) === "-$2.5M", FMT.compact(-2500000));
+check("compact(999) = $999", FMT.compact(999) === "$999", FMT.compact(999));
+check("compact(1e7) = $10M", FMT.compact(1e7) === "$10M", FMT.compact(1e7));
+check("pct1(NaN) = 0.0%", FMT.pct1(NaN) === "0.0%", FMT.pct1(NaN));
+
 console.log("\n" + pass + " passed, " + fail + " failed");
 process.exit(fail ? 1 : 0);

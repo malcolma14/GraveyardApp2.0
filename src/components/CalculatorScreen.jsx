@@ -347,7 +347,9 @@ function AssumptionsDrawer({ projection, onSet, open: openProp, onOpenChange, co
               <dd>
                 {p.province.probateNote.charAt(0).toUpperCase() + p.province.probateNote.slice(1)}, applied
                 to the projected estate{p.estate > 0 ? ": " + FMT.money(p.breakdown.probate) : ""}. Simplified
-                large-estate schedule, December 2025.
+                large-estate schedule, December 2025. An upper bound: we apply it to the full portfolio,
+                but registered accounts and TFSAs with named beneficiaries often pass outside the estate
+                and avoid probate.
               </dd>
             </div>
             {p.estate > 0 ? (

@@ -6,20 +6,23 @@
 import { CONTENT } from "./content.js";
 
 export function score(answers, projection) {
+  // Persisted state can arrive null/corrupt — never let a bad blob throw in render.
+  if (!answers || typeof answers !== "object") answers = {};
   let pts = 0;
   let max = 0;
   CONTENT.mindset.forEach((q) => {
     const idx = answers[q.id];
     if (idx == null) return;
     const a = q.answers[idx];
-    if (a.excluded) return;
+    if (!a || a.excluded) return;
     pts += a.score;
-    max += 3;
+    max += Math.max(...q.answers.filter((x) => !x.excluded).map((x) => x.score));
   });
-  const intentionality = max > 0 ? Math.round((pts / max) * 100) : 0;
+  const frac = max > 0 ? pts / max : 0;
+  const intentionality = Math.round(frac * 100);
 
   const signal = projection ? projection.signal : "Low";
-  const highIntent = intentionality >= 50;
+  const highIntent = frac >= 0.5;
   const highSurplus = signal === "High";
   const profile = highSurplus ? (highIntent ? "D" : "A") : highIntent ? "B" : "C";
 

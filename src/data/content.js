@@ -154,7 +154,7 @@ export const CONTENT = {
         min: 0,
         max: 30000000,
         step: 25000,
-        helper: "Capital gains are taxed when you sell, or at death."
+        helper: "In this illustration, capital gains tax on these is estimated once, at death."
       },
       {
         id: "savings",
@@ -245,6 +245,7 @@ export const CONTENT = {
       items: [
         "CPP, OAS and employer pensions",
         "Exact retirement tax brackets (we apply one average rate to RRSP/RRIF withdrawals)",
+        "Tax on non-registered investment income during your lifetime (gains are estimated at death)",
         "RRIF minimum withdrawals",
         "Spousal rollovers and income splitting",
         "Your exact tax rate at death (we use the top marginal rate)",
